@@ -1,10 +1,165 @@
 <!DOCTYPE html>
 <html>
+
 	<head>
-		<meta charset="UTF-8">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
 		<title></title>
+		<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+		<script src="js/mui.min.js"></script>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+		</script>
+		<script src="js/core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/download2.js" type="text/javascript" charset="utf-8"></script>
+
 	</head>
+	<style type="text/css">
+		.mui-grid-view.mui-grid-9 .mui-media {
+			padding-top: 9px;
+			padding-bottom: 9px;
+		}
+		
+		.bold {
+			font-weight: bold;
+		}
+	</style>
+
 	<body>
-		123
+		<script type="text/javascript">
+			var app = App.Instance;
+			app.init();
+			//app.test();
+			//console.log(app.note);
+		</script>
+		<nav class="mui-bar mui-bar-tab">
+			<a class="mui-tab-item mui-active" href="#add">
+				<span class="mui-tab-label">新增</span>
+			</a>
+			<a class="mui-tab-item" href="#get">
+				<span onclick="reload()" id="reload" class="mui-tab-label">查看</span>
+			</a>
+			<a class="mui-tab-item" href="#set">
+				<span class="mui-tab-label">设置</span>
+			</a>
+		</nav>
+		<div class="mui-content">
+			<div id="add" class="mui-control-content mui-active">
+				<ul id="grid" class="mui-table-view mui-grid-view mui-grid-9">
+				</ul>
+			</div>
+			<script type="text/javascript">
+				//新增分类列表
+				var cate = app.getCate();
+				var li_arr = [];
+				for(i = 0; i < cate.length; i++) {
+					var div = document.createElement("div");
+					var li = document.createElement("li");
+					li.setAttribute("class", "mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3 li-1st")
+					li.setAttribute("cid", cate[i].id);
+
+					var a = document.createElement("a")
+					li.appendChild(a);
+					var div2 = document.createElement("div");
+					div2.setAttribute("class", "mui-media-body")
+					div2.innerText = cate[i].name;
+					a.appendChild(div2)
+					li_arr.push(li);
+
+					for(j = 0; j < cate[i].children.length; j++) {
+						var li = document.createElement("li");
+						li_arr.push(li);
+						li.setAttribute("cid", cate[i].children[j].id);
+						li.setAttribute("class", "mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3")
+						var a = document.createElement("a")
+						li.appendChild(a);
+						var div2 = document.createElement("div");
+						div2.setAttribute("class", "mui-media-body")
+						div2.innerText = cate[i].children[j].name;
+						a.appendChild(div2)
+					}
+
+				}
+
+				var li_change = [];
+				for(i = 0; i < 3; i++) {
+					for(j = 0; j < 9; j++) {
+						var li = li_arr.shift();
+						li_change[i + j * 3] = li;
+					}
+				}
+				li_change.forEach(function(value) {
+					document.getElementById("grid").appendChild(value)
+				})
+				//mui.prompt("", "备注", "学习", "", cate_click())
+
+				function cate_click() {
+
+					console.log("123");
+				}
+
+				mui('#grid').on('tap', '.mui-table-view-cell', function(e) {
+					var cid = this.getAttribute("cid");
+					var name = this.firstChild.firstChild.innerHTML;
+					console.log(this.getAttribute("cid"));
+					console.log(this.firstChild.firstChild.innerHTML);
+					e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+					var btnArray = ['取消', '确定'];
+					
+					mui.prompt(' ', '备注', name, btnArray, function(e) {
+						if(e.index == 1) {
+							app.add(cid, e.value);
+							mui.toast("操作成功")
+						} else {
+							mui.toast("取消操作")
+						}
+					})
+					
+					mui.toast(123);
+
+				})
+				
+			</script>
+			<div id="get" class="mui-control-content">
+				<ul id="getnode" class="mui-table-view">
+				</ul>
+				<script type="text/javascript">
+					mui(".mui-bar").on('tap', '#reload', function() {
+						reload();
+
+					})
+
+					function reload() {
+						var notelist = app.getNote();
+						var str = "";
+						if(notelist.length > 200) {
+							for(i = 0; i < 200; i++) {
+								var note = notelist.pop();
+								str += "<li class=\"mui-table-view-cell\">\n\t\t\t\t\t\t\t\t" + note.fromtime.year + "." + note.fromtime.month + "." + note.fromtime.date + " " + note.fromtime.hour + ":" + note.fromtime.minute + " ~ " + note.totime.hour + ":" + note.totime.minute + " \n\t\t\t\t\t\t\t\t<span class=\"bold\">" + note.during.hour + "</span>h \n\t\t\t\t\t\t\t\t<span class=\"bold\">" + note.during.minute + "</span>min\n\t\t\t\t\t\t\t\t<br /> " + note.cname + " : \u5907\u6CE8 " + note.mark + "\n\t\t\t\t\t\t\t</li>";
+							}
+						} else {							
+							var length = notelist.length;
+
+							for(i = 0; i < length; i++) {
+								var note = notelist.pop();
+								str += "<li class=\"mui-table-view-cell\">\n\t\t\t\t\t\t\t\t" + note.fromtime.year + "." + note.fromtime.month + "." + note.fromtime.date + " " + note.fromtime.hour + ":" + note.fromtime.minute + " ~ " + note.totime.hour + ":" + note.totime.minute + " \n\t\t\t\t\t\t\t\t<span class=\"bold\">" + note.during.hour + "</span>h \n\t\t\t\t\t\t\t\t<span class=\"bold\">" + note.during.minute + "</span>min\n\t\t\t\t\t\t\t\t<br /> " + note.cname + " : \u5907\u6CE8 " + note.mark + "\n\t\t\t\t\t\t\t</li>";
+
+							}
+						}
+
+						document.getElementById("getnode").innerHTML = str;
+					}
+				</script>
+			</div>
+			<div id="set" class="mui-control-content">
+				<button type="button" onclick="app.download()" class="mui-btn  mui-btn-block">下载</button>
+				<button type="button" onclick="app.upload()" class="mui-btn mui-btn-block">上传</button>
+
+			</div>
+			
+		</div>
+
 	</body>
+
 </html>
